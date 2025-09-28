@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LeaveEase Dashboard</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="stylesheet" href="dashboard.css">
+    <!-- here cdn is content deilovery network which directlt acess this page to the chart library-->
+    <!-- it's like saying Hey browser! Please bring in Chart.js from the internet so I can draw charts easily.” -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <h1 id="dashboardTitle">LeaveEase Dashboard</h1>
+            <div class="header-actions">
+                <button class="ai-chat-btn" onclick="openAIChat()" title="Chat with AI Assistant">
+                    <span>🤖</span>
+                    AI Assistant
+                </button>
+                <div class="user-profile" onclick="showProfile()" style="cursor: pointer;" title="Click to view profile">
+                    <div class="user-avatar"></div>
+                    <div class="user-info">
+                        <span class="user-name" id="userName">User</span>
+                        <span class="user-role" id="userRole">Employee</span>
+                    </div>
+                </div>
+                <button class="logout-btn" onclick="logout()">
+                    <span>🚪</span>
+                    Logout
+                </button>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="nav-tabs">
+            <button class="nav-tab active" data-tab="dashboard">
+                <span class="tab-icon">📊</span>
+                Dashboard
+            </button>
+            <button class="nav-tab" data-tab="request-leave">
+                <span class="tab-icon">📝</span>
+                Request Leave
+            </button>
+            <button class="nav-tab employee-only" data-tab="calendar">
+                <span class="tab-icon">📅</span>
+                Calendar
+            </button>
+            <button class="nav-tab" data-tab="history">
+                <span class="tab-icon">📋</span>
+                History
+            </button>
+
+            <button class="nav-tab hr-only" data-tab="hr-management" style="display: none;">
+                <span class="tab-icon">👨‍💼</span>
+                HR Management
+            </button>
+
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="tab-content active">
+                <!-- Statistics Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card employee-only">
+                        <div class="stat-header">
+                            <span class="stat-title">Total Leave Taken</span>
+                            <span class="stat-icon">📊</span>
+                        </div>
+                        <div class="stat-value" id="totalLeaveTaken">16 days</div>
+                        <div class="stat-subtitle" id="remainingDays">29 days remaining this year</div>
+                    </div>
+
+                    <div class="stat-card employee-only">
+                        <div class="stat-header">
+                            <span class="stat-title">Approval Rate</span>
+                            <span class="stat-icon">⏰</span>
+                        </div>
+                        <div class="stat-value" id="approvalRate">92%</div>
+                        <div class="stat-subtitle">29 days remaining this year</div>
+                    </div>
+
+                    <div class="stat-card" onclick="dashboard.showPendingLeaves()" style="cursor: pointer;">
+                        <div class="stat-header">
+                            <span class="stat-title">Pending Requests</span>
+                            <span class="stat-icon">📋</span>
+                        </div>
+                        <div class="stat-value" id="pendingRequests">1</div>
+                        <div class="stat-subtitle">Click to view details</div>
+                    </div>
+
+                                                <div class="stat-card" onclick="dashboard.showTeamOnLeave()" style="cursor: pointer;">
+                                <div class="stat-header">
+                                    <span class="stat-title">Team Members on Leave</span>
+                                    <span class="stat-icon">👥</span>
+                                </div>
+                                <div class="stat-value" id="teamMembersOnLeave">2</div>
+                                <div class="stat-subtitle">Click to view details</div>
+                            </div>
+                </div>
+
+                <!-- Content Grid -->
+                <div class="content-grid">
+                    <!-- Leave Overview Chart (Employee Only) -->
+                    <div class="chart-section employee-only">
+                        <h3>My Leave Overview</h3>
+                        <p class="chart-subtitle">Loading your leave data...</p>
+                        <div class="chart-container">
+                            <canvas id="leaveChart"></canvas>
+                        </div>
+                        <div class="chart-legend">
+                            <div class="legend-item">
+                                <span class="legend-color" style="background-color: #4F46E5;"></span>
+                                <span>Days Taken</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color" style="background-color: #E5E7EB;"></span>
+                                <span>Available</span>
+                            </div>
+                        </div>
+                        <div class="chart-summary">
+                            <div class="summary-item">
+                                <span class="summary-label">Used This Year</span>
+                                <span class="summary-value" id="chartTotalDays">--</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Remaining</span>
+                                <span class="summary-value" id="chartRemainingDays">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Late Attendance Chart (HR Only) -->
+                    <div class="chart-section hr-only">
+                        <h3>Late Attendance Overview</h3>
+                        <p class="chart-subtitle">Employee late attendance this month</p>
+                        <div class="chart-container">
+                            <canvas id="lateAttendanceChart"></canvas>
+                        </div>
+                        <div class="chart-legend">
+                            <div class="legend-item">
+                                <span class="legend-color" style="background-color: #DC2626;"></span>
+                                <span>Late Days</span>
+                            </div>
+                        </div>
+                        <div class="chart-summary">
+                            <div class="summary-item">
+                                <span class="summary-label">Total Late Days</span>
+                                <span class="summary-value" id="chartTotalLateDays">--</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Employees Affected</span>
+                                <span class="summary-value" id="chartLateEmployees">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Upcoming Leave -->
+                    <div class="upcoming-section">
+                        <h3>Upcoming Leave</h3>
+                        <p class="section-subtitle">Your scheduled time off</p>
+                        <div id="upcomingLeaveList" class="upcoming-list">
+                            <!-- Dynamic content will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Grid -->
+                <div class="bottom-grid">
+                    <!-- Notifications -->
+                    <div class="notifications-section">
+                        <h3>Notifications</h3>
+                        <p class="section-subtitle">Recent update and alerts</p>
+                        <div id="notificationsList" class="notifications-list">
+                            <!-- Dynamic content will be loaded here -->
+                        </div>
+                    </div>
+
+                    <!-- Team Members on Leave -->
+                    <div id="teamOnLeaveSection" class="team-section">
+                        <h3>Team Members on Leave Today</h3>
+                        <p class="section-subtitle">Colleagues who are absent today</p>
+                        <div id="teamOnLeaveList" class="team-list">
+                            <!-- Dynamic content will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+
+            <!-- Request Leave Tab -->
+            <div id="request-leave" class="tab-content">
+                <div class="form-container">
+                    <h2>Request Leave</h2>
+                    <form id="leaveForm" class="leave-form">
+                        <div class="form-group">
+                            <label for="employeeName">Employee Name</label>
+                            <input type="text" id="employeeName" name="employeeName" required>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="startDate">Start Date</label>
+                                <input type="date" id="startDate" name="startDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="endDate">End Date</label>
+                                <input type="date" id="endDate" name="endDate" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="leaveType">Leave Type</label>
+                            <select id="leaveType" name="leaveType" required>
+                                <option value="Annual">Annual Leave</option>
+                                <option value="Sick">Sick Leave</option>
+                                <option value="Personal">Personal Leave</option>
+                                <option value="Emergency">Emergency Leave</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="reason">Reason for Leave</label>
+                            <textarea id="reason" name="reason" rows="4" required></textarea>
+                        </div>
+
+                        <button type="submit" class="submit-btn">Submit Request</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Calendar Tab -->
+            <div id="calendar" class="tab-content">
+                <div class="calendar-container">
+                    <div class="calendar-header">
+                        <h2>📅 My Calendar</h2>
+                        <p class="calendar-subtitle">View your leave days and attendance status</p>
+                    </div>
+                    
+                    <!-- Calendar Controls -->
+                    <div class="calendar-controls">
+                        <button class="calendar-nav-btn" id="prevMonth">
+                            <span>◀</span>
+                        </button>
+                        <div class="calendar-month-year">
+                            <span id="currentMonth">January</span>
+                            <span id="currentYear">2024</span>
+                        </div>
+                        <button class="calendar-nav-btn" id="nextMonth">
+                            <span>▶</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Calendar Legend -->
+                    <div class="calendar-legend">
+                        <div class="legend-item">
+                            <span class="legend-color leave-day"></span>
+                            <span>Leave Day</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color late-day"></span>
+                            <span>Late Day</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color today"></span>
+                            <span>Today</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color weekend"></span>
+                            <span>Weekend</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Calendar Grid -->
+                    <div class="calendar-grid">
+                        <div class="calendar-weekdays">
+                            <div class="weekday">Sun</div>
+                            <div class="weekday">Mon</div>
+                            <div class="weekday">Tue</div>
+                            <div class="weekday">Wed</div>
+                            <div class="weekday">Thu</div>
+                            <div class="weekday">Fri</div>
+                            <div class="weekday">Sat</div>
+                        </div>
+                        <div class="calendar-days" id="calendarDays">
+                            <!-- Calendar days will be generated by JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <!-- Calendar Summary -->
+                    <div class="calendar-summary">
+                        <div class="summary-card">
+                            <div class="summary-title">This Month</div>
+                            <div class="summary-stats">
+                                <div class="stat-item">
+                                    <span class="stat-number" id="monthLeaveDays">0</span>
+                                    <span class="stat-label">Leave Days</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number" id="monthLateDays">0</span>
+                                    <span class="stat-label">Late Days</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number" id="monthWorkingDays">22</span>
+                                    <span class="stat-label">Working Days</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- History Tab -->
+            <div id="history" class="tab-content">
+                <div class="history-container">
+                    <h2>Leave History</h2>
+                    <div class="table-container">
+                        <table class="history-table">
+                            <thead>
+                                <tr>
+                                    <th class="employee-only">Employee</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Duration</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTableBody">
+                                <!-- Dynamic content will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HR Management Tab -->
+            <div id="hr-management" class="tab-content hr-only" style="display: none;">
+                <div class="hr-management-dashboard">
+                    <h2>👨‍💼 HR Management Dashboard</h2>
+                    
+                    <!-- HR Email Configuration Section -->
+                    <div class="hr-section">
+                        <h3>📧 Email Configuration</h3>
+                        <p class="section-subtitle">Configure your personal email for direct employee communication</p>
+                        
+                        <div class="email-config-section">
+                            <div class="config-status" id="emailConfigStatus">
+                                <span class="status-badge bg-warning text-dark">
+                                    <i class="fas fa-clock me-1"></i>Not Configured
+                                </span>
+                                <p class="mt-2 text-muted">Configure your email to send direct communications to employees</p>
+                            </div>
+                            
+                            <div class="config-actions">
+                                <a href="/hr-email-config.html" class="btn btn-primary">
+                                    <i class="fas fa-cog me-2"></i>Configure Email Settings
+                                </a>
+                                <button id="testEmailConfigBtn" class="btn btn-outline-success ms-2">
+                                    <i class="fas fa-paper-plane me-2"></i>Test Email
+                                </button>
+                            </div>
+                            
+                            <div class="config-benefits mt-3">
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Benefits: Employees receive emails from your personal account, can reply directly to you, professional AI-generated content
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Leave Request Management Section -->
+                    <div class="hr-section">
+                        <h3>📋 Leave Request Management</h3>
+                        <p class="section-subtitle">Approve or reject employee leave requests with direct email communication</p>
+                        
+                        <!-- Pending Leave Requests -->
+                        <div class="pending-leaves-section">
+                            <h4>⏳ Pending Leave Requests</h4>
+                            <div id="hrPendingRequestsList" class="hr-requests-list">
+                                <!-- Pending requests will be loaded here -->
+                            </div>
+                        </div>
+
+                        <!-- All Leave Requests -->
+                        <div class="all-leaves-section">
+                            <h4>📊 All Leave Requests</h4>
+                            <div class="hr-filters">
+                                <select id="hrStatusFilter" onchange="dashboard.filterHRRequests()">
+                                    <option value="all">All Status</option>
+                                    <option value="Pending">Pending</option>
+                                    <option value="Approved">Approved</option>
+                                    <option value="Rejected">Rejected</option>
+                                </select>
+                            </div>
+                            <div id="hrAllRequestsList" class="hr-requests-list">
+                                <!-- All requests will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Late Attendance Management Section -->
+                    <div class="hr-section">
+                        <h3>⏰ Late Attendance Management</h3>
+                        <p class="section-subtitle">Mark and track employee late attendance</p>
+                        
+                        <!-- Mark Late Form -->
+                        <div class="late-attendance-form">
+                            <h4>📝 Mark Employee as Late</h4>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="lateEmployeeName">Employee Name *</label>
+                                    <select id="lateEmployeeName" required>
+                                        <option value="">Select Employee</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="lateDate">Date *</label>
+                                    <input type="date" id="lateDate" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="lateReason">Reason for Late *</label>
+                                    <select id="lateReason" required>
+                                        <option value="">Select Reason</option>
+                                        <option value="Traffic Delay">Traffic Delay</option>
+                                        <option value="Public Transport Issue">Public Transport Issue</option>
+                                        <option value="Personal Emergency">Personal Emergency</option>
+                                        <option value="Overslept">Overslept</option>
+                                        <option value="Medical Appointment">Medical Appointment</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="lateNotes">Additional Notes</label>
+                                    <textarea id="lateNotes" rows="2" placeholder="Any additional notes..."></textarea>
+                                </div>
+                            </div>
+                            <button class="hr-action-btn hr-approve-btn" onclick="dashboard.markEmployeeLate()">
+                                ⏰ Mark as Late
+                            </button>
+                        </div>
+                        
+                        <!-- Late Attendance Records -->
+                        <div class="late-attendance-records">
+                            <h4>📋 Recent Late Attendance Records</h4>
+                            <div class="hr-filters">
+                                <input type="date" id="lateDateFilter" onchange="dashboard.filterLateRecords()" placeholder="Filter by date">
+                            </div>
+                            <div class="late-records-list" id="lateRecordsList">
+                                <!-- Late records will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Profile Modal -->
+    <div id="profileModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>👤 My Profile</h2>
+                <span class="close" onclick="closeProfileModal()">&times;</span>
+            </div>
+            
+            <div class="modal-body">
+                <!-- Profile Picture Section -->
+                <div class="profile-picture-section">
+                    <div class="profile-picture-container">
+                        <img id="modalProfilePicture" src="/images/default-avatar.svg" alt="Profile Picture" class="profile-picture">
+                        <div class="profile-picture-overlay" onclick="document.getElementById('profilePictureInput').click()">
+                            <span class="camera-icon">📷</span>
+                            <span class="change-text">Change Photo</span>
+                        </div>
+                    </div>
+                    <input type="file" id="profilePictureInput" accept="image/*" style="display: none;" onchange="handleProfilePictureChange(event)">
+                    <button class="change-picture-btn" onclick="document.getElementById('profilePictureInput').click()">
+                        📷 Change Picture
+                    </button>
+                </div>
+
+                <!-- Profile Information -->
+                <div class="profile-info-section">
+                    <div class="info-group">
+                        <label>👤 Full Name</label>
+                        <div class="info-value" id="modalFullName">Loading...</div>
+                    </div>
+                    
+                    <div class="info-group">
+                        <label>📧 Email</label>
+                        <div class="info-value" id="modalEmail">Loading...</div>
+                    </div>
+                    
+                    <div class="info-group">
+                        <label>🆔 Username</label>
+                        <div class="info-value" id="modalUsername">Loading...</div>
+                    </div>
+                    
+                    <div class="info-group">
+                        <label>🏢 Department</label>
+                        <div class="info-value" id="modalDepartment">Loading...</div>
+                    </div>
+                    
+                    <div class="info-group">
+                        <label>🎯 Role</label>
+                        <div class="info-value" id="modalRole">Loading...</div>
+                    </div>
+                    
+                    <div class="info-group">
+                        <label>🔢 Employee Code</label>
+                        <div class="info-value" id="modalEmployeeCode">Loading...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="modal-btn secondary" onclick="closeProfileModal()">Close</button>
+                <button class="modal-btn primary" onclick="saveProfileChanges()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- HR Rejection Reason Modal -->
+    <div id="hrRejectionModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>❌ Reject Leave Request</h2>
+                <span class="close" onclick="closeHRRejectionModal()">&times;</span>
+            </div>
+            
+            <div class="modal-body">
+                <div class="rejection-info">
+                    <h3>Leave Request Details</h3>
+                    <div id="rejectionRequestDetails">
+                        <!-- Request details will be populated here -->
+                    </div>
+                </div>
+                
+                <div class="rejection-form">
+                    <h3>Rejection Reason</h3>
+                    <p style="color: #6b7280; margin-bottom: 15px;">
+                        Please provide a valid reason for rejecting this leave request. 
+                        This reason will be visible to the employee.
+                    </p>
+                    
+                    <div class="form-group">
+                        <label for="rejectionReason">Reason for Rejection *</label>
+                        <textarea 
+                            id="rejectionReason" 
+                            name="rejectionReason" 
+                            rows="4" 
+                            placeholder="Please provide a clear and valid reason for rejecting this leave request..."
+                            required
+                        ></textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="modal-btn secondary" onclick="closeHRRejectionModal()">Cancel</button>
+                <button class="modal-btn danger" onclick="dashboard.confirmRejectLeave()">Reject Leave</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="dashboard.js"></script>
+    <script>
+        function logout() {
+            window.location.href = '/logout';
+        }
+
+        function openAIChat() {
+            window.open('/ai-chat.html', '_blank', 'width=900,height=700,scrollbars=yes,resizable=yes');
+        }
+    </script>
+</body>
+</html>

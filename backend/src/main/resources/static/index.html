@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LeaveEase - Modern Leave Management</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Leave Request Form</h1>
+   <form id="leaveForm">
+  <input type="text" id="employeeName" placeholder="Employee Name" required />
+  <input type="date" id="fromDate" required />
+  <input type="date" id="toDate" required />
+  <textarea id="reason" placeholder="Reason for Leave" required></textarea>
+
+
+  <input type="hidden" id="status" value="Pending" />
+
+  <button type="submit">Submit</button>
+</form>
+
+
+    <h2>Leave Requests</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>From</th>
+          <th>To</th>
+          <th>Reason</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="leaveTableBody"></tbody>
+    </table>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

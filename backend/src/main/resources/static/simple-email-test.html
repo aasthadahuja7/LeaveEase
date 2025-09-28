@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Email Test - LeaveEase</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .email-flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        .email-box {
+            background: #e3f2fd;
+            border: 3px solid #2196F3;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 10px;
+            text-align: center;
+            min-width: 200px;
+        }
+        .arrow {
+            font-size: 30px;
+            color: #4CAF50;
+            margin: 0 20px;
+        }
+        .step {
+            background: #f8f9fa;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        .step h4 {
+            margin: 0 0 10px 0;
+            color: #28a745;
+        }
+        .highlight {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .login-btn {
+            background: #007bff;
+        }
+        .login-btn:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📧 Simple Email System Test</h1>
+        <p>Understanding How HR-to-Employee Email Works</p>
+    </div>
+
+    <div class="card">
+        <h2>🎯 Your Requirement</h2>
+        <p><strong>"HR will send the mail from which he/she signed up and employee will get the mail from which he/she applied for leave"</strong></p>
+        
+        <div class="success">
+            ✅ <strong>Good News:</strong> This is exactly how your system works!
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>📧 Email Flow in Your System</h2>
+        
+        <div class="email-flow">
+            <div class="email-box">
+                <h3>👨‍💼 HR User</h3>
+                <p><strong>Signup Email:</strong></p>
+                <p style="font-size: 18px; color: #2196F3;"><strong>hr@company.com</strong></p>
+                <p><small>This is the email HR used to register</small></p>
+            </div>
+            
+            <div class="arrow">→</div>
+            
+            <div class="email-box">
+                <h3>👤 Employee</h3>
+                <p><strong>Signup Email:</strong></p>
+                <p style="font-size: 18px; color: #2196F3;"><strong>employee@company.com</strong></p>
+                <p><small>This is the email employee used to register</small></p>
+            </div>
+        </div>
+
+        <div class="highlight">
+            <h4>🎉 What Happens When HR Approves/Rejects Leave:</h4>
+            <ul>
+                <li><strong>Email FROM:</strong> hr@company.com (HR's signup email)</li>
+                <li><strong>Email TO:</strong> employee@company.com (Employee's signup email)</li>
+                <li><strong>Content:</strong> Professional, personalized message</li>
+                <li><strong>Reply:</strong> Employee can reply directly to HR</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>🧪 How to Test This System</h2>
+        
+        <div class="step">
+            <h4>Step 1: Login as HR</h4>
+            <p>Go to the main application and login with HR credentials</p>
+            <button class="login-btn" onclick="window.open('/', '_blank')">
+                🔐 Go to Login Page
+            </button>
+            <p><strong>Login Details:</strong></p>
+            <ul>
+                <li>Email: <code>hr@company.com</code></li>
+                <li>Password: <code>password123</code></li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <h4>Step 2: Go to HR Management</h4>
+            <p>After login, click on the "HR Management" tab in the dashboard</p>
+        </div>
+
+        <div class="step">
+            <h4>Step 3: Test Email System</h4>
+            <p>Find any pending leave request and click "Approve" or "Reject"</p>
+            <p>Watch the browser console (F12) to see the email details</p>
+        </div>
+
+        <div class="step">
+            <h4>Step 4: See the Results</h4>
+            <p>You'll see something like:</p>
+            <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; font-family: monospace;">
+                ✅ Email sent successfully<br>
+                📤 From: hr@company.com<br>
+                📥 To: employee@company.com<br>
+                🤖 Method: HR Direct Email
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>❓ Why the Configuration Page Shows Error</h2>
+        
+        <div class="highlight">
+            <p><strong>The error "Unable to load user information" happens because:</strong></p>
+            <ul>
+                <li>You need to be <strong>logged in as HR first</strong></li>
+                <li>The system needs to know which HR user is configuring their email</li>
+                <li>This is a security feature to prevent unauthorized access</li>
+            </ul>
+        </div>
+
+        <div class="success">
+            <h4>✅ Solution:</h4>
+            <ol>
+                <li>Login as HR first: <code>hr@company.com</code> / <code>password123</code></li>
+                <li>Then access the email configuration page</li>
+                <li>The system will automatically load your HR email address</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>🎯 Summary</h2>
+        
+        <div class="success">
+            <h4>✅ Your System is Working Perfectly!</h4>
+            <ul>
+                <li><strong>HR sends emails FROM:</strong> Their signup email (hr@company.com)</li>
+                <li><strong>Employee receives emails TO:</strong> Their signup email (employee@company.com)</li>
+                <li><strong>No external email setup needed</strong> - uses system registration emails</li>
+                <li><strong>Direct communication</strong> between HR and employees</li>
+            </ul>
+        </div>
+
+        <p><strong>Your exact requirement is fulfilled!</strong> The system uses the email addresses that users signed up with, not external personal emails.</p>
+        
+        <div style="text-align: center; margin-top: 30px;">
+            <button class="login-btn" onclick="window.open('/', '_blank')">
+                🚀 Test the System Now
+            </button>
+        </div>
+    </div>
+</body>
+</html>

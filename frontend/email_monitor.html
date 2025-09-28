@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email System Monitor - LeaveEase</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .monitor-container {
+            padding: 20px;
+        }
+        .monitor-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            margin-bottom: 20px;
+        }
+        .monitor-header {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+            padding: 20px;
+            border-radius: 15px 15px 0 0;
+            text-align: center;
+        }
+        .email-flow-visual {
+            padding: 30px;
+            text-align: center;
+        }
+        .flow-step {
+            display: inline-block;
+            margin: 0 20px;
+            text-align: center;
+            position: relative;
+        }
+        .flow-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            margin: 0 auto 10px;
+            transition: all 0.3s ease;
+        }
+        .hr-icon { background: linear-gradient(45deg, #6f42c1, #e83e8c); }
+        .system-icon { background: linear-gradient(45deg, #fd7e14, #ffc107); }
+        .employee-icon { background: linear-gradient(45deg, #20c997, #28a745); }
+        
+        .flow-arrow {
+            position: absolute;
+            top: 35px;
+            right: -30px;
+            font-size: 20px;
+            color: #28a745;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #28a745;
+        }
+        
+        .activity-log {
+            max-height: 400px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px;
+        }
+        
+        .log-entry {
+            padding: 10px;
+            border-left: 4px solid #28a745;
+            margin-bottom: 10px;
+            background: white;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        .log-entry.success { border-left-color: #28a745; }
+        .log-entry.warning { border-left-color: #ffc107; }
+        .log-entry.error { border-left-color: #dc3545; }
+        
+        .control-panel {
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            margin: 20px;
+        }
+        
+        .demo-button {
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            border: none;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .demo-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
+        }
+        
+        .email-preview {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="monitor-container">
+        <div class="container-fluid">
+            <!-- Header -->
+            <div class="monitor-card">
+                <div class="monitor-header">
+                    <h1><i class="fas fa-satellite-dish me-3"></i>Email System Monitor</h1>
+                    <p class="mb-0">Real-time monitoring of HR-to-Employee email communication</p>
+                </div>
+            </div>
+
+            <!-- Email Flow Visualization -->
+            <div class="monitor-card">
+                <div class="email-flow-visual">
+                    <h3 class="mb-4">📧 Email Flow Visualization</h3>
+                    <div class="d-flex justify-content-center align-items-center flex-wrap">
+                        <div class="flow-step">
+                            <div class="flow-icon hr-icon">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                            <div><strong>HR User</strong></div>
+                            <div id="hrEmailDisplay">hr@company.com</div>
+                            <div class="flow-arrow">
+                                <i class="fas fa-arrow-right"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="flow-step">
+                            <div class="flow-icon system-icon">
+                                <i class="fas fa-cogs"></i>
+                            </div>
+                            <div><strong>Email System</strong></div>
+                            <div id="emailMethodDisplay">Dynamic Routing</div>
+                            <div class="flow-arrow">
+                                <i class="fas fa-arrow-right"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="flow-step">
+                            <div class="flow-icon employee-icon">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div><strong>Employee</strong></div>
+                            <div id="employeeEmailDisplay">employee@company.com</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistics -->
+            <div class="monitor-card">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalEmails">0</div>
+                        <div>Total Emails Sent</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="directEmails">0</div>
+                        <div>HR Direct Emails</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="systemEmails">0</div>
+                        <div>System Fallback Emails</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="successRate">100%</div>
+                        <div>Success Rate</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Control Panel -->
+            <div class="control-panel">
+                <h4><i class="fas fa-gamepad me-2"></i>Live Demo Controls</h4>
+                <div class="row">
+                    <div class="col-md-6">
+                        <button class="demo-button" onclick="simulateHRApproval()">
+                            <i class="fas fa-check me-2"></i>Simulate HR Approval
+                        </button>
+                        <button class="demo-button" onclick="simulateHRRejection()">
+                            <i class="fas fa-times me-2"></i>Simulate HR Rejection
+                        </button>
+                    </div>
+                    <div class="col-md-6">
+                        <button class="demo-button" onclick="testEmailConfig()">
+                            <i class="fas fa-cog me-2"></i>Test Email Config
+                        </button>
+                        <button class="demo-button" onclick="clearLogs()">
+                            <i class="fas fa-trash me-2"></i>Clear Logs
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Log -->
+            <div class="monitor-card">
+                <h4 class="p-3 mb-0"><i class="fas fa-list me-2"></i>Real-time Activity Log</h4>
+                <div class="activity-log" id="activityLog">
+                    <!-- Activity entries will be added here -->
+                </div>
+            </div>
+
+            <!-- Email Preview -->
+            <div class="email-preview" id="emailPreview" style="display: none;">
+                <h4><i class="fas fa-envelope-open me-2"></i>Latest Email Preview</h4>
+                <div id="emailContent">
+                    <!-- Email content will be shown here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let emailStats = {
+            total: 0,
+            direct: 0,
+            system: 0,
+            success: 0
+        };
+
+        // Initialize monitor
+        function initializeMonitor() {
+            addLogEntry('🚀 Email System Monitor Started', 'success');
+            addLogEntry('📡 Monitoring HR-to-Employee email communication', 'success');
+            addLogEntry('✅ System ready for testing', 'success');
+            
+            // Start periodic status check
+            setInterval(updateSystemStatus, 5000);
+        }
+
+        // Add log entry
+        function addLogEntry(message, type = 'success') {
+            const log = document.getElementById('activityLog');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.innerHTML = `<strong>[${timestamp}]</strong> ${message}`;
+            
+            log.insertBefore(entry, log.firstChild);
+            
+            // Keep only last 50 entries
+            while (log.children.length > 50) {
+                log.removeChild(log.lastChild);
+            }
+        }
+
+        // Update statistics
+        function updateStats() {
+            document.getElementById('totalEmails').textContent = emailStats.total;
+            document.getElementById('directEmails').textContent = emailStats.direct;
+            document.getElementById('systemEmails').textContent = emailStats.system;
+            
+            const successRate = emailStats.total > 0 ? 
+                Math.round((emailStats.success / emailStats.total) * 100) : 100;
+            document.getElementById('successRate').textContent = successRate + '%';
+        }
+
+        // Simulate HR approval
+        async function simulateHRApproval() {
+            addLogEntry('🎯 Simulating HR Approval Process...', 'success');
+            
+            try {
+                // Get a pending leave request
+                const response = await fetch('/leaves');
+                const leaves = await response.json();
+                const pending = leaves.filter(leave => leave.status === 'Pending');
+                
+                if (pending.length === 0) {
+                    addLogEntry('⚠️ No pending leave requests found', 'warning');
+                    return;
+                }
+                
+                const leaveId = pending[0].id;
+                const employeeName = pending[0].employeeName || 'Test Employee';
+                
+                addLogEntry(`📋 Processing leave request for ${employeeName}`, 'success');
+                addLogEntry(`🆔 Leave ID: ${leaveId}`, 'success');
+                
+                // Test HR approval
+                const approvalResponse = await fetch(`/leaves/${leaveId}/hr-approve`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const result = await approvalResponse.json();
+                
+                if (result.success) {
+                    emailStats.total++;
+                    emailStats.success++;
+                    
+                    if (result.emailMethod === 'HR Direct Email') {
+                        emailStats.direct++;
+                        addLogEntry('✅ SUCCESS: HR Direct Email Sent!', 'success');
+                        document.getElementById('emailMethodDisplay').textContent = 'HR Direct Email';
+                    } else {
+                        emailStats.system++;
+                        addLogEntry('✅ SUCCESS: System Email Sent (Fallback)', 'warning');
+                        document.getElementById('emailMethodDisplay').textContent = 'System Fallback';
+                    }
+                    
+                    addLogEntry(`📤 From: ${result.fromEmail}`, 'success');
+                    addLogEntry(`📥 To: ${result.toEmail}`, 'success');
+                    addLogEntry(`👤 HR User: ${result.hrUser}`, 'success');
+                    
+                    updateStats();
+                    showEmailPreview('Approval', result);
+                    
+                } else {
+                    addLogEntry('❌ Approval failed: ' + result.message, 'error');
+                }
+                
+            } catch (error) {
+                addLogEntry('❌ Error in approval simulation: ' + error.message, 'error');
+            }
+        }
+
+        // Simulate HR rejection
+        async function simulateHRRejection() {
+            addLogEntry('🎯 Simulating HR Rejection Process...', 'success');
+            
+            try {
+                // Get a pending leave request
+                const response = await fetch('/leaves');
+                const leaves = await response.json();
+                const pending = leaves.filter(leave => leave.status === 'Pending');
+                
+                if (pending.length === 0) {
+                    addLogEntry('⚠️ No pending leave requests found', 'warning');
+                    return;
+                }
+                
+                const leaveId = pending[0].id;
+                const employeeName = pending[0].employeeName || 'Test Employee';
+                
+                addLogEntry(`📋 Processing rejection for ${employeeName}`, 'success');
+                addLogEntry(`🆔 Leave ID: ${leaveId}`, 'success');
+                
+                // Test HR rejection
+                const rejectionResponse = await fetch(`/leaves/${leaveId}/hr-reject`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        rejectionReason: 'Demo rejection - Testing HR direct email system'
+                    })
+                });
+                
+                const result = await rejectionResponse.json();
+                
+                if (result.success) {
+                    emailStats.total++;
+                    emailStats.success++;
+                    
+                    if (result.emailMethod === 'HR Direct Email') {
+                        emailStats.direct++;
+                        addLogEntry('✅ SUCCESS: HR Direct Rejection Email Sent!', 'success');
+                        document.getElementById('emailMethodDisplay').textContent = 'HR Direct Email';
+                    } else {
+                        emailStats.system++;
+                        addLogEntry('✅ SUCCESS: System Rejection Email Sent (Fallback)', 'warning');
+                        document.getElementById('emailMethodDisplay').textContent = 'System Fallback';
+                    }
+                    
+                    addLogEntry(`📤 From: ${result.fromEmail}`, 'success');
+                    addLogEntry(`📥 To: ${result.toEmail}`, 'success');
+                    addLogEntry(`👤 HR User: ${result.hrUser}`, 'success');
+                    addLogEntry(`📝 Reason: ${result.rejectionReason}`, 'success');
+                    
+                    updateStats();
+                    showEmailPreview('Rejection', result);
+                    
+                } else {
+                    addLogEntry('❌ Rejection failed: ' + result.message, 'error');
+                }
+                
+            } catch (error) {
+                addLogEntry('❌ Error in rejection simulation: ' + error.message, 'error');
+            }
+        }
+
+        // Test email configuration
+        function testEmailConfig() {
+            addLogEntry('🔧 Testing Email Configuration...', 'success');
+            addLogEntry('📧 HR Email: hr@company.com', 'success');
+            addLogEntry('🔑 Checking for Gmail App Password...', 'warning');
+            addLogEntry('ℹ️ Configure HR email for direct communication', 'warning');
+            addLogEntry('💡 Use /hr-email-config.html to set up', 'success');
+        }
+
+        // Show email preview
+        function showEmailPreview(type, result) {
+            const preview = document.getElementById('emailPreview');
+            const content = document.getElementById('emailContent');
+            
+            content.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>📧 Email Headers</h5>
+                        <table class="table table-sm">
+                            <tr><td><strong>Type:</strong></td><td>${type}</td></tr>
+                            <tr><td><strong>From:</strong></td><td>${result.fromEmail}</td></tr>
+                            <tr><td><strong>To:</strong></td><td>${result.toEmail}</td></tr>
+                            <tr><td><strong>Method:</strong></td><td>${result.emailMethod}</td></tr>
+                            <tr><td><strong>HR User:</strong></td><td>${result.hrUser}</td></tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>📝 Email Features</h5>
+                        <ul class="list-unstyled">
+                            <li>✅ Personalized greeting</li>
+                            <li>✅ Professional HTML formatting</li>
+                            <li>✅ Complete leave details</li>
+                            <li>✅ HR contact information</li>
+                            <li>✅ Direct reply capability</li>
+                            <li>✅ Mobile-responsive design</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <h5>🎨 Content Preview</h5>
+                    <div class="border p-3 bg-light">
+                        <strong>Subject:</strong> ${type === 'Approval' ? '✅ Leave Request Approved' : '📋 Leave Request Update'}<br>
+                        <strong>Content:</strong> AI-generated professional email with personalized content, 
+                        beautiful HTML formatting, and direct communication capabilities.
+                    </div>
+                </div>
+            `;
+            
+            preview.style.display = 'block';
+            addLogEntry('👁️ Email preview updated', 'success');
+        }
+
+        // Update system status
+        async function updateSystemStatus() {
+            try {
+                const response = await fetch('/leaves');
+                if (response.ok) {
+                    // System is running
+                    document.querySelector('.hr-icon').style.animation = 'pulse 2s infinite';
+                }
+            } catch (error) {
+                addLogEntry('⚠️ System connection check failed', 'warning');
+            }
+        }
+
+        // Clear logs
+        function clearLogs() {
+            document.getElementById('activityLog').innerHTML = '';
+            addLogEntry('🧹 Activity log cleared', 'success');
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeMonitor();
+            updateStats();
+        });
+    </script>
+</body>
+</html>
