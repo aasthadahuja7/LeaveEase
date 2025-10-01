@@ -35,10 +35,28 @@ public class EmployeeService {
     public Optional<Employee> getEmployeeByEmail(String email) {
         return employeeRepository.findByEmail(email);
     }
-    
+    // validation email 
     // Save employee
     public Employee saveEmployee(Employee employee) {
+        validateEmail(employee.getEmail());
         return employeeRepository.save(employee);
+    }
+
+    private void validateEmail(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            throw new IllegalArgumentException("Email is required");
+        }
+        
+        String gmailPattern = "^[a-zA-Z0-9._%+-]+@gmail\\.com$";
+        if (!email.matches(gmailPattern)) {
+            throw new IllegalArgumentException("Email must be a valid Gmail address (example@gmail.com)");
+        }
+        
+        // Check if email is already in use
+        Optional<Employee> existingEmployee = employeeRepository.findByEmail(email);
+        if (existingEmployee.isPresent()) {
+            throw new IllegalArgumentException("Email address is already registered");
+        }
     }
     
     // Get HR dashboard statistics

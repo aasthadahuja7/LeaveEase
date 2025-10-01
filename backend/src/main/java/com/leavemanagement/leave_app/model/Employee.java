@@ -3,6 +3,8 @@ package com.leavemanagement.leave_app.model;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.index.Indexed;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 
 import java.time.LocalDate;
 
@@ -15,7 +17,12 @@ public class Employee {
     private String employeeId; // Unique employee ID like EMP001
     
     private String fullName;
+    
+    @NotBlank(message = "Email is required")
+    @Pattern(regexp = "^[a-zA-Z0-9._%+-]+@gmail\\.com$", message = "Email must be a valid Gmail address")
+    @Indexed(unique = true)
     private String email;
+    
     private String department;
     private String position;
     private LocalDate joinDate;

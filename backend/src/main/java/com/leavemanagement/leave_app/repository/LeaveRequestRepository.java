@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.util.List;
 
+// validations Backend 
 @Repository
 public interface LeaveRequestRepository extends MongoRepository<LeaveRequest, String> {
     
@@ -16,6 +17,9 @@ public interface LeaveRequestRepository extends MongoRepository<LeaveRequest, St
     
     // Find by status
     List<LeaveRequest> findByStatus(String status);
+    
+    // Find by employee name and status
+    List<LeaveRequest> findByEmployeeNameAndStatus(String employeeName, String status);
     
     // Find by date range
     List<LeaveRequest> findByStartDateBetween(LocalDate startDate, LocalDate endDate);

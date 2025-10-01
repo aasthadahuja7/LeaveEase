@@ -1,7 +1,11 @@
 package com.leavemanagement.leave_app.model;
-//  It is model to represent the leave form data
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.FutureOrPresent;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -10,15 +14,20 @@ import java.time.temporal.ChronoUnit;
 public class LeaveRequest {
 
     @Id
-
     private String id;  // MongoDB uses String IDs by default
-
+    // validation
+    @NotBlank(message = "Employee name is required")
+    @Size(min = 2, max = 100, message = "Employee name must be between 2 and 100 characters")
     private String employeeName;
     
     private String employeeId; // User ID for better linking to User entity
 
+    @NotNull(message = "Start date is required")
+    @FutureOrPresent(message = "Start date must be today or a future date")
     private LocalDate startDate;
 
+    @NotNull(message = "End date is required")
+    @FutureOrPresent(message = "End date must be today or a future date")
     private LocalDate endDate;
 
     private String reason;
