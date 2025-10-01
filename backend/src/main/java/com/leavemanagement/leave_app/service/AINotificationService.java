@@ -6,9 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,9 +23,6 @@ public class AINotificationService {
 
     @Autowired
     private WebClient.Builder webClientBuilder;
-    
-    @Autowired
-    private EmailService emailService;
 
     /**
      * Send AI-powered notification when leave is approved
@@ -44,19 +41,15 @@ public class AINotificationService {
             notificationData.put("reason", leaveRequest.getReason());
             notificationData.put("leaveRequestId", leaveRequest.getId());
             notificationData.put("timestamp", LocalDateTime.now());
-            notificationData.put("channels", new String[]{"email", "whatsapp", "slack"});
+            notificationData.put("channels", Arrays.asList("email", "whatsapp", "slack"));
             notificationData.put("priority", "high");
             notificationData.put("action", "APPROVED");
 
-            // Send to N8N webhook
             boolean n8nSuccess = sendToN8N(notificationData);
-            
-            // Fallback to direct email if N8N fails
-            if (!n8nSuccess) {
-                emailService.sendLeaveApprovedEmail(leaveRequest, employee);
-            }
-            
+
+
             System.out.println("🤖 AI Notification: Leave approved for " + employee.getFullName());
+
         } catch (Exception e) {
             System.err.println("❌ Error sending AI notification: " + e.getMessage());
         }
@@ -80,19 +73,15 @@ public class AINotificationService {
             notificationData.put("rejectionReason", rejectionReason != null ? rejectionReason : "No reason provided");
             notificationData.put("leaveRequestId", leaveRequest.getId());
             notificationData.put("timestamp", LocalDateTime.now());
-            notificationData.put("channels", new String[]{"email", "whatsapp", "slack"});
+            notificationData.put("channels", Arrays.asList("email", "whatsapp", "slack"));
             notificationData.put("priority", "high");
             notificationData.put("action", "REJECTED");
 
-            // Send to N8N webhook
             boolean n8nSuccess = sendToN8N(notificationData);
-            
-            // Fallback to direct email if N8N fails
-            if (!n8nSuccess) {
-                emailService.sendLeaveRejectedEmail(leaveRequest, employee, rejectionReason);
-            }
-            
+
+
             System.out.println("🤖 AI Notification: Leave rejected for " + employee.getFullName());
+
         } catch (Exception e) {
             System.err.println("❌ Error sending AI notification: " + e.getMessage());
         }
@@ -111,12 +100,12 @@ public class AINotificationService {
             notificationData.put("endDate", leaveRequest.getEndDate());
             notificationData.put("leaveType", leaveRequest.getLeaveType());
             notificationData.put("timestamp", LocalDateTime.now());
-            notificationData.put("channels", new String[]{"email"});
+            notificationData.put("channels", Arrays.asList("email"));
 
-            // Send to N8N webhook
             sendToN8N(notificationData);
-            
+
             System.out.println("🤖 AI Notification: Leave reminder for " + employee.getFullName());
+
         } catch (Exception e) {
             System.err.println("❌ Error sending AI notification: " + e.getMessage());
         }
@@ -128,19 +117,23 @@ public class AINotificationService {
     private boolean sendToN8N(Map<String, Object> data) {
         try {
             WebClient webClient = webClientBuilder.build();
-            
-            String response = webClient.post()
+
+            WebClient.RequestBodySpec requestSpec = webClient.post()
                     .uri(n8nWebhookUrl)
-                    .header("Content-Type", "application/json")
-                    .header("X-N8N-API-Key", n8nApiKey)
-                    .bodyValue(data)
+                    .header("Content-Type", "application/json");
+
+            if (n8nApiKey != null && !n8nApiKey.isEmpty()) {
+                requestSpec.header("X-N8N-API-Key", n8nApiKey);
+            }
+
+            String response = requestSpec.bodyValue(data)
                     .retrieve()
                     .bodyToMono(String.class)
                     .block();
-            
+
             System.out.println("✅ N8N webhook response: " + response);
             return true;
-            
+
         } catch (Exception e) {
             System.err.println("❌ N8N webhook error: " + e.getMessage());
             return false;
@@ -158,21 +151,26 @@ public class AINotificationService {
             testData.put("timestamp", LocalDateTime.now());
 
             WebClient webClient = webClientBuilder.build();
-            
-            String response = webClient.post()
+
+            WebClient.RequestBodySpec requestSpec = webClient.post()
                     .uri(n8nWebhookUrl)
-                    .header("Content-Type", "application/json")
-                    .header("X-N8N-API-Key", n8nApiKey)
-                    .bodyValue(testData)
+                    .header("Content-Type", "application/json");
+
+            if (n8nApiKey != null && !n8nApiKey.isEmpty()) {
+                requestSpec.header("X-N8N-API-Key", n8nApiKey);
+            }
+
+            String response = requestSpec.bodyValue(testData)
                     .retrieve()
                     .bodyToMono(String.class)
                     .block();
 
             System.out.println("✅ N8N connection test successful: " + response);
             return true;
+
         } catch (Exception e) {
             System.err.println("❌ N8N connection test failed: " + e.getMessage());
             return false;
         }
     }
-} 
+}

@@ -5,7 +5,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.index.Indexed;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
-
 import java.time.LocalDate;
 
 @Document(collection = "employees")

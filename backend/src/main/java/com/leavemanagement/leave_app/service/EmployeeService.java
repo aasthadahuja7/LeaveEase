@@ -35,7 +35,7 @@ public class EmployeeService {
     public Optional<Employee> getEmployeeByEmail(String email) {
         return employeeRepository.findByEmail(email);
     }
-    // validation email 
+    
     // Save employee
     public Employee saveEmployee(Employee employee) {
         validateEmail(employee.getEmail());
@@ -109,28 +109,28 @@ public class EmployeeService {
     public void initializeSampleEmployees() {
         if (employeeRepository.count() == 0) {
             // Create sample employees
-            Employee emp1 = new Employee("EMP001", "John Doe", "john.doe@company.com", 
+            Employee emp1 = new Employee("EMP001", "John Doe", "john.doe@gmail.com",
                                        "Engineering", "Software Developer", LocalDate.of(2022, 1, 15), "123-456-7890");
             emp1.setUsedLeaves(5);
             emp1.updateLeaveBalance();
             
-            Employee emp2 = new Employee("EMP002", "Jane Smith", "jane.smith@company.com", 
+            Employee emp2 = new Employee("EMP002", "Jane Smith", "jane.smith@gmail.com",
                                        "Engineering", "Senior Developer", LocalDate.of(2021, 3, 10), "123-456-7891");
             emp2.setUsedLeaves(8);
             emp2.setOnLeave(true);
             emp2.updateLeaveBalance();
             
-            Employee emp3 = new Employee("EMP003", "Mike Johnson", "mike.johnson@company.com", 
+            Employee emp3 = new Employee("EMP003", "Mike Johnson", "mike.johnson@gmail.com",
                                        "Marketing", "Marketing Manager", LocalDate.of(2020, 6, 5), "123-456-7892");
             emp3.setUsedLeaves(12);
             emp3.updateLeaveBalance();
             
-            Employee emp4 = new Employee("EMP004", "Sarah Wilson", "sarah.wilson@company.com", 
+            Employee emp4 = new Employee("EMP004", "Sarah Wilson", "sarah.wilson@gmail.com",
                                        "HR", "HR Manager", LocalDate.of(2019, 9, 20), "123-456-7893");
             emp4.setUsedLeaves(3);
             emp4.updateLeaveBalance();
             
-            Employee emp5 = new Employee("EMP005", "David Brown", "david.brown@company.com", 
+            Employee emp5 = new Employee("EMP005", "David Brown", "david.brown@gmail.com",
                                        "Engineering", "DevOps Engineer", LocalDate.of(2023, 2, 1), "123-456-7894");
             emp5.setUsedLeaves(2);
             emp5.setOnLeave(true);
@@ -143,12 +143,6 @@ public class EmployeeService {
     // Add this method after initializeSampleEmployees() and before the EmployeeStats class
     public void createEmployeeFromUser(User user) {
         try {
-            // Check if employee already exists for this user by email
-            Optional<Employee> existingEmployee = employeeRepository.findByEmail(user.getEmail());
-            if (existingEmployee.isPresent()) {
-                return; // Employee already exists, don't create duplicate
-            }
-            
             // Generate unique employee ID
             String employeeId = generateEmployeeId(user);
             

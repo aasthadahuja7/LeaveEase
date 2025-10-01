@@ -4,14 +4,7 @@ import com.leavemanagement.leave_app.model.LeaveRequest;
 import com.leavemanagement.leave_app.model.User;
 import com.leavemanagement.leave_app.repository.LeaveRequestRepository;
 import com.leavemanagement.leave_app.repository.UserRepository;
-import com.leavemanagement.leave_app.service.AIEmailGeneratorService;
-import com.leavemanagement.leave_app.service.AINotificationService;
-import com.leavemanagement.leave_app.service.DynamicEmailService;
-import com.leavemanagement.leave_app.service.EmailService;
-import com.leavemanagement.leave_app.service.EmployeeEmailService;
-import com.leavemanagement.leave_app.service.HREmailService;
-import com.leavemanagement.leave_app.service.SmartEmailTemplateService;
-import com.leavemanagement.leave_app.service.UserEmailConfigService;
+
 import java.util.stream.Collectors;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,29 +30,7 @@ public class LeaveController {
     @Autowired
     private UserRepository userRepository;
     
-    @Autowired
-    private AINotificationService aiNotificationService;
-    
-    @Autowired
-    private EmailService emailService;
-    
-    @Autowired
-    private EmployeeEmailService employeeEmailService;
-    
-    @Autowired
-    private HREmailService hrEmailService;
-    
-    @Autowired
-    private AIEmailGeneratorService aiEmailGeneratorService;
-    
-    @Autowired
-    private SmartEmailTemplateService smartEmailTemplateService;
-    
-    @Autowired
-    private DynamicEmailService dynamicEmailService;
-    
-    @Autowired
-    private UserEmailConfigService userEmailConfigService;
+
 
     // CREATE: Add a new leave request with validation
     @PostMapping
@@ -150,27 +121,7 @@ public class LeaveController {
             leave.setRejectionReason(null); // Clear any previous rejection reason
             LeaveRequest savedLeave = leaveRequestRepository.save(leave);
             
-            // Send notification through N8N workflow with fallback to direct email
-            try {
-                User employee = findEmployeeForLeaveRequest(leave);
-                if (employee != null) {
-                    System.out.println("🤖 Sending approval notification via N8N workflow to: " + employee.getEmail());
-                    
-                    // Use N8N workflow for notification
-                    aiNotificationService.sendLeaveApprovedNotification(savedLeave, employee);
-                    
-                    // Also send HR email as backup/additional notification
-                    hrEmailService.sendLeaveApprovedEmailFromHR(savedLeave, employee, authentication);
-                    
-                    System.out.println("✅ Approval notifications sent successfully to " + employee.getFullName() + " (" + employee.getEmail() + ")");
-                } else {
-                    System.err.println("❌ Employee not found for leave request: " + leave.getEmployeeName());
-                    logAvailableUsers();
-                }
-            } catch (Exception e) {
-                System.err.println("❌ Error sending approval notifications: " + e.getMessage());
-                e.printStackTrace();
-            }
+
             
             return ResponseEntity.ok(savedLeave);
         }
@@ -200,29 +151,6 @@ public class LeaveController {
                 
                 LeaveRequest savedLeave = leaveRequestRepository.save(leave);
                 System.out.println("✅ Leave request rejected successfully");
-                
-                // Send notification through N8N workflow with fallback to direct email
-                try {
-                    User employee = findEmployeeForLeaveRequest(leave);
-                    if (employee != null) {
-                        System.out.println("🤖 Sending rejection notification via N8N workflow to: " + employee.getEmail());
-                        
-                        // Use N8N workflow for notification
-                        aiNotificationService.sendLeaveRejectedNotification(savedLeave, employee, rejectionReason);
-                        
-                        // Also send HR email as backup/additional notification
-                        hrEmailService.sendLeaveRejectedEmailFromHR(savedLeave, employee, rejectionReason, authentication);
-                        
-                        System.out.println("✅ Rejection notifications sent successfully to " + employee.getFullName() + " (" + employee.getEmail() + ")");
-                    } else {
-                        System.err.println("❌ Employee not found for leave request: " + leave.getEmployeeName());
-                        logAvailableUsers();
-                    }
-                } catch (Exception e) {
-                    System.err.println("❌ Error sending rejection notifications: " + e.getMessage());
-                    e.printStackTrace();
-                }
-                
                 return ResponseEntity.ok(savedLeave);
             } else {
                 System.err.println("❌ Leave request not found with ID: " + id);
@@ -250,75 +178,12 @@ public class LeaveController {
             if ("approve".equalsIgnoreCase(action)) {
                 leave.setStatus("Approved");
                 leave.setRejectionReason(null);
-                
-                // Send approval notification via N8N workflow
-                try {
-                    Optional<User> employeeOpt = userRepository.findByFullName(leave.getEmployeeName());
-                    if (employeeOpt.isPresent()) {
-                        User employee = employeeOpt.get();
-                        System.out.println("🤖 Sending approval notification via N8N workflow to: " + employee.getEmail());
-                        
-                        // Use N8N workflow for notification
-                        aiNotificationService.sendLeaveApprovedNotification(leave, employee);
-                        
-                        // Also send direct email as backup
-                        emailService.sendLeaveApprovedEmail(leave, employee);
-                    } else {
-                        // Try to find by username as fallback
-                        Optional<User> employeeByUsername = userRepository.findByUsername(leave.getEmployeeName());
-                        if (employeeByUsername.isPresent()) {
-                            User employee = employeeByUsername.get();
-                            System.out.println("🤖 Sending approval notification via N8N workflow to: " + employee.getEmail() + " (found by username)");
-                            
-                            // Use N8N workflow for notification
-                            aiNotificationService.sendLeaveApprovedNotification(leave, employee);
-                            
-                            // Also send direct email as backup
-                            emailService.sendLeaveApprovedEmail(leave, employee);
-                        } else {
-                            System.err.println("❌ Employee not found for notification: " + leave.getEmployeeName());
-                        }
-                    }
-                } catch (Exception e) {
-                    System.err.println("❌ Error sending approval notification: " + e.getMessage());
-                }
+                System.out.println("✅ Leave request approved successfully");
                 
             } else if ("reject".equalsIgnoreCase(action)) {
                 leave.setStatus("Rejected");
                 leave.setRejectionReason(reason);
-                
-                // Send rejection notification via N8N workflow
-                try {
-                    Optional<User> employeeOpt = userRepository.findByFullName(leave.getEmployeeName());
-                    if (employeeOpt.isPresent()) {
-                        User employee = employeeOpt.get();
-                        System.out.println("🤖 Sending rejection notification via N8N workflow to: " + employee.getEmail());
-                        
-                        // Use N8N workflow for notification
-                        aiNotificationService.sendLeaveRejectedNotification(leave, employee, reason);
-                        
-                        // Also send direct email as backup
-                        emailService.sendLeaveRejectedEmail(leave, employee, reason);
-                    } else {
-                        // Try to find by username as fallback
-                        Optional<User> employeeByUsername = userRepository.findByUsername(leave.getEmployeeName());
-                        if (employeeByUsername.isPresent()) {
-                            User employee = employeeByUsername.get();
-                            System.out.println("🤖 Sending rejection notification via N8N workflow to: " + employee.getEmail() + " (found by username)");
-                            
-                            // Use N8N workflow for notification
-                            aiNotificationService.sendLeaveRejectedNotification(leave, employee, reason);
-                            
-                            // Also send direct email as backup
-                            emailService.sendLeaveRejectedEmail(leave, employee, reason);
-                        } else {
-                            System.err.println("❌ Employee not found for notification: " + leave.getEmployeeName());
-                        }
-                    }
-                } catch (Exception e) {
-                    System.err.println("❌ Error sending rejection notification: " + e.getMessage());
-                }
-                
+                System.out.println("✅ Leave request rejected successfully");
             } else {
                 return ResponseEntity.badRequest().build();
             }
@@ -328,140 +193,42 @@ public class LeaveController {
         return ResponseEntity.notFound().build();
     }
 
-
-    // AI-POWERED APPROVAL: Approve leave with AI-generated email
-    @PutMapping("/{id}/ai-approve")
-    public ResponseEntity<Map<String, Object>> aiApproveLeave(@PathVariable String id, Authentication authentication) {
-        Map<String, Object> response = new HashMap<>();
-        
-        try {
-            Optional<LeaveRequest> optional = leaveRequestRepository.findById(id);
-            if (!optional.isPresent()) {
-                response.put("success", false);
-                response.put("message", "Leave request not found");
-                return ResponseEntity.notFound().build();
-            }
-
-            LeaveRequest leave = optional.get();
-            leave.setStatus("Approved");
-            leave.setRejectionReason(null);
-            LeaveRequest savedLeave = leaveRequestRepository.save(leave);
-
-            // Get employee and HR user details
-            User employee = findEmployeeForLeaveRequest(leave);
-            User hrUser = getCurrentHRUser(authentication);
-            
-            if (employee == null) {
-                response.put("success", false);
-                response.put("message", "Employee not found");
-                return ResponseEntity.badRequest().body(response);
-            }
-
-            System.out.println("🤖 Generating AI-powered approval email for: " + employee.getEmail());
-
-            // Try different AI approaches in order of preference
-            String emailContent = null;
-            String aiMethod = "fallback";
-
-            // Option 1: Try OpenAI (if API key is configured)
-            try {
-                emailContent = aiEmailGeneratorService.generateApprovalEmail(savedLeave, employee, hrUser);
-                if (emailContent != null && !emailContent.trim().isEmpty()) {
-                    aiMethod = "OpenAI";
-                }
-            } catch (Exception e) {
-                System.out.println("⚠️ OpenAI not available, trying next option...");
-            }
-
-            // Option 2: Try Smart Template Engine (always available)
-            if (emailContent == null) {
-                try {
-                    emailContent = smartEmailTemplateService.generateSmartApprovalEmail(savedLeave, employee, hrUser);
-                    aiMethod = "Smart Template";
-                } catch (Exception e) {
-                    System.err.println("❌ Smart template failed: " + e.getMessage());
-                }
-            }
-
-            // Option 3: Fallback to basic template
-            if (emailContent == null) {
-                emailContent = generateBasicApprovalEmail(savedLeave, employee, hrUser);
-                aiMethod = "Basic Template";
-            }
-
-            // Send the email
-            try {
-                emailService.sendHtmlEmail(employee.getEmail(), 
-                    "✅ Leave Request Approved - " + savedLeave.getLeaveType(), 
-                    emailContent);
-                
-                System.out.println("✅ AI-powered approval email sent successfully using: " + aiMethod);
-                
-                response.put("success", true);
-                response.put("message", "Leave approved and AI-powered email sent successfully");
-                response.put("aiMethod", aiMethod);
-                response.put("employeeEmail", employee.getEmail());
-                response.put("leaveRequest", savedLeave);
-                
-                return ResponseEntity.ok(response);
-                
-            } catch (Exception e) {
-                System.err.println("❌ Error sending AI email: " + e.getMessage());
-                response.put("success", false);
-                response.put("message", "Leave approved but email failed: " + e.getMessage());
-                return ResponseEntity.status(500).body(response);
-            }
-
-        } catch (Exception e) {
-            System.err.println("❌ Error in AI approval process: " + e.getMessage());
-            response.put("success", false);
-            response.put("message", "Error processing AI approval: " + e.getMessage());
-            return ResponseEntity.status(500).body(response);
-        }
+  try {
+    Optional<LeaveRequest> optional = leaveRequestRepository.findById(id);
+    if (optional.isEmpty()) {
+        response.put("success", false);
+        response.put("message", "Leave request not found");
+        return ResponseEntity.status(404).body(response);
     }
 
-    // AI-POWERED REJECTION: Reject leave with AI-generated email
-    @PutMapping("/{id}/ai-reject")
-    public ResponseEntity<Map<String, Object>> aiRejectLeave(
-            @PathVariable String id, 
-            @RequestBody(required = false) Map<String, String> requestBody, 
-            Authentication authentication) {
-        
-        Map<String, Object> response = new HashMap<>();
-        
-        try {
-            Optional<LeaveRequest> optional = leaveRequestRepository.findById(id);
-            if (!optional.isPresent()) {
-                response.put("success", false);
-                response.put("message", "Leave request not found");
-                return ResponseEntity.notFound().build();
-            }
+    LeaveRequest leave = optional.get();
 
-            LeaveRequest leave = optional.get();
-            String rejectionReason = null;
-            if (requestBody != null && requestBody.containsKey("rejectionReason")) {
-                rejectionReason = requestBody.get("rejectionReason");
-            }
+    // Safely get rejection reason from requestBody
+    String rejectionReason = (requestBody != null && requestBody.containsKey("rejectionReason"))
+            ? requestBody.get("rejectionReason")
+            : null;
 
-            leave.setStatus("Rejected");
-            leave.setRejectionReason(rejectionReason);
-            LeaveRequest savedLeave = leaveRequestRepository.save(leave);
+    leave.setStatus("Rejected");
+    leave.setRejectionReason(rejectionReason);
 
-            // Get employee and HR user details
-            User employee = findEmployeeForLeaveRequest(leave);
-            User hrUser = getCurrentHRUser(authentication);
-            
-            if (employee == null) {
-                response.put("success", false);
-                response.put("message", "Employee not found");
-                return ResponseEntity.badRequest().body(response);
-            }
+    LeaveRequest savedLeave = leaveRequestRepository.save(leave);
 
-            System.out.println("🤖 Generating AI-powered rejection email for: " + employee.getEmail());
+    // Get employee and HR user details
+    User employee = findEmployeeForLeaveRequest(leave);
+    User hrUser = getCurrentHRUser(authentication);
 
-            // Try different AI approaches in order of preference
-            String emailContent = null;
-            String aiMethod = "fallback";
+    if (employee == null) {
+        response.put("success", false);
+        response.put("message", "Employee not found");
+        return ResponseEntity.badRequest().body(response);
+    }
+
+    System.out.println("🤖 Generating AI-powered rejection email for: " + employee.getEmail());
+
+    // Initialize email content and method
+    String emailContent = null;
+    String aiMethod = "fallback";
+
 
             // Option 1: Try OpenAI (if API key is configured)
             try {

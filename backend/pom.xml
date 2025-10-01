@@ -75,11 +75,7 @@
             <artifactId>jackson-databind</artifactId>
         </dependency>
 
-        <!-- Spring Boot Mail Starter for Real Email Sending -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-mail</artifactId>
-        </dependency>
+
 
 
         <!-- DevTools for hot reload -->

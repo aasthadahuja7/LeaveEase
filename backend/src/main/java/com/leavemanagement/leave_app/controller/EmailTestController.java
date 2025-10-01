@@ -3,11 +3,8 @@ package com.leavemanagement.leave_app.controller;
 import com.leavemanagement.leave_app.model.User;
 import com.leavemanagement.leave_app.model.LeaveRequest;
 import com.leavemanagement.leave_app.repository.UserRepository;
-import com.leavemanagement.leave_app.service.EmailService;
-import com.leavemanagement.leave_app.service.HREmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -21,22 +18,16 @@ public class EmailTestController {
 
     @Autowired
     private UserRepository userRepository;
-    
-    @Autowired
-    private EmailService emailService;
-    
-    @Autowired
-    private HREmailService hrEmailService;
 
     /**
-     * Test endpoint to verify email functionality
+     * Test endpoint to verify email functionality (simulation only, no actual email)
      */
     @PostMapping("/email")
     public ResponseEntity<Map<String, Object>> testEmail(@RequestBody Map<String, String> request) {
         try {
             String userEmail = request.get("email");
             String testType = request.getOrDefault("type", "approval");
-            
+
             if (userEmail == null || userEmail.isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
@@ -55,8 +46,8 @@ public class EmailTestController {
             }
 
             User user = userOpt.get();
-            
-            // Create a sample leave request for testing
+
+            // Create a sample leave request for testing (simulation only)
             LeaveRequest testLeaveRequest = new LeaveRequest();
             testLeaveRequest.setEmployeeName(user.getFullName());
             testLeaveRequest.setEmployeeId(user.getId());
@@ -66,27 +57,28 @@ public class EmailTestController {
             testLeaveRequest.setLeaveType("Annual");
             testLeaveRequest.setStatus(testType.equals("approval") ? "Approved" : "Rejected");
 
-            // Send test email
-            if (testType.equals("approval")) {
-                emailService.sendLeaveApprovedEmail(testLeaveRequest, user);
-            } else {
-                emailService.sendLeaveRejectedEmail(testLeaveRequest, user, "This is a test rejection for email functionality verification.");
-            }
-
+            // ⚠️ Email sending removed — just simulate response
             return ResponseEntity.ok(Map.of(
                 "success", true,
-                "message", "Test " + testType + " email sent successfully to " + userEmail,
+                "message", "Simulated test " + testType + " email (no actual email sent)",
                 "user", Map.of(
                     "name", user.getFullName(),
                     "email", user.getEmail(),
                     "department", user.getDepartment() != null ? user.getDepartment() : "N/A"
+                ),
+                "leaveRequest", Map.of(
+                    "leaveType", testLeaveRequest.getLeaveType(),
+                    "status", testLeaveRequest.getStatus(),
+                    "startDate", testLeaveRequest.getStartDate(),
+                    "endDate", testLeaveRequest.getEndDate(),
+                    "reason", testLeaveRequest.getReason()
                 )
             ));
 
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(Map.of(
                 "success", false,
-                "message", "Error sending test email: " + e.getMessage(),
+                "message", "Error in test simulation: " + e.getMessage(),
                 "error", e.getClass().getSimpleName()
             ));
         }
