@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Demo - Dynamic Email System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .demo-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .demo-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+        .demo-header {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            padding: 20px;
+            border-radius: 15px 15px 0 0;
+            text-align: center;
+        }
+        .test-section {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .test-section:last-child {
+            border-bottom: none;
+        }
+        .test-button {
+            background: linear-gradient(45deg, #2196F3, #21CBF3);
+            border: none;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.4);
+        }
+        .result-box {
+            background: #f8f9fa;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .email-flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .email-box {
+            background: #e3f2fd;
+            border: 2px solid #2196F3;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px;
+            text-align: center;
+            min-width: 200px;
+        }
+        .arrow {
+            font-size: 24px;
+            color: #4CAF50;
+            margin: 0 10px;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-success { background-color: #4CAF50; }
+        .status-warning { background-color: #FF9800; }
+        .status-error { background-color: #f44336; }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="container">
+            <div class="demo-card">
+                <div class="demo-header">
+                    <h1><i class="fas fa-rocket me-3"></i>Live Demo - Dynamic Email System</h1>
+                    <p class="mb-0">Test HR-to-Employee Direct Email Communication</p>
+                </div>
+
+                <!-- System Status -->
+                <div class="test-section">
+                    <h4><i class="fas fa-heartbeat me-2"></i>System Status</h4>
+                    <div id="systemStatus">
+                        <span class="status-indicator status-warning"></span>Checking system status...
+                    </div>
+                    <button class="test-button" onclick="checkSystemStatus()">
+                        <i class="fas fa-sync me-2"></i>Check Status
+                    </button>
+                </div>
+
+                <!-- Email Flow Visualization -->
+                <div class="test-section">
+                    <h4><i class="fas fa-route me-2"></i>Email Flow</h4>
+                    <div class="email-flow">
+                        <div class="email-box">
+                            <i class="fas fa-user-tie fa-2x mb-2"></i>
+                            <div><strong>HR User</strong></div>
+                            <div id="hrEmail">hr@company.com</div>
+                        </div>
+                        <div class="arrow">
+                            <i class="fas fa-arrow-right"></i>
+                        </div>
+                        <div class="email-box">
+                            <i class="fas fa-envelope fa-2x mb-2"></i>
+                            <div><strong>Email System</strong></div>
+                            <div id="emailMethod">Dynamic Routing</div>
+                        </div>
+                        <div class="arrow">
+                            <i class="fas fa-arrow-right"></i>
+                        </div>
+                        <div class="email-box">
+                            <i class="fas fa-user fa-2x mb-2"></i>
+                            <div><strong>Employee</strong></div>
+                            <div id="employeeEmail">employee@company.com</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Testing -->
+                <div class="test-section">
+                    <h4><i class="fas fa-play-circle me-2"></i>Live Testing</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Step 1: Get Leave Requests</h6>
+                            <button class="test-button" onclick="getLeaveRequests()">
+                                <i class="fas fa-list me-2"></i>Load Leave Requests
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Step 2: Test HR Actions</h6>
+                            <button class="test-button" onclick="testHRApproval()" id="approveBtn" disabled>
+                                <i class="fas fa-check me-2"></i>Test HR Approval
+                            </button>
+                            <button class="test-button" onclick="testHRRejection()" id="rejectBtn" disabled>
+                                <i class="fas fa-times me-2"></i>Test HR Rejection
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <h6>Step 3: Configure HR Email (Optional)</h6>
+                        <div class="input-group mb-3">
+                            <input type="password" class="form-control" id="appPasswordInput" placeholder="Enter Gmail App Password (optional)">
+                            <button class="btn btn-outline-primary" onclick="configureHREmail()">
+                                <i class="fas fa-cog me-2"></i>Configure
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results -->
+                <div class="test-section">
+                    <h4><i class="fas fa-chart-line me-2"></i>Test Results</h4>
+                    <div id="testResults" class="result-box" style="display: none;">
+                        Waiting for test results...
+                    </div>
+                </div>
+
+                <!-- Email Preview -->
+                <div class="test-section">
+                    <h4><i class="fas fa-eye me-2"></i>Email Preview</h4>
+                    <div id="emailPreview" style="display: none;">
+                        <div class="card">
+                            <div class="card-header">
+                                <strong>Email Details</strong>
+                            </div>
+                            <div class="card-body" id="emailContent">
+                                <!-- Email preview will be shown here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentLeaveId = null;
+        let testResults = [];
+
+        // Check system status
+        async function checkSystemStatus() {
+            updateStatus('Checking system status...', 'warning');
+            
+            try {
+                const response = await fetch('/leaves');
+                if (response.ok) {
+                    updateStatus('✅ System Online - Dynamic Email System Ready', 'success');
+                    logResult('System Status: ONLINE ✅');
+                } else {
+                    updateStatus('❌ System Error - Please check server', 'error');
+                    logResult('System Status: ERROR ❌');
+                }
+            } catch (error) {
+                updateStatus('❌ Connection Error - Server not responding', 'error');
+                logResult('System Status: CONNECTION ERROR ❌');
+            }
+        }
+
+        // Get leave requests
+        async function getLeaveRequests() {
+            logResult('🔍 Loading leave requests...');
+            
+            try {
+                const response = await fetch('/leaves');
+                const leaves = await response.json();
+                
+                const pending = leaves.filter(leave => leave.status === 'Pending');
+                
+                if (pending.length > 0) {
+                    currentLeaveId = pending[0].id;
+                    const employee = pending[0].employeeName || 'Test Employee';
+                    const employeeEmail = pending[0].employeeEmail || 'employee@company.com';
+                    
+                    document.getElementById('employeeEmail').textContent = employeeEmail;
+                    document.getElementById('approveBtn').disabled = false;
+                    document.getElementById('rejectBtn').disabled = false;
+                    
+                    logResult(`✅ Found ${pending.length} pending leave requests`);
+                    logResult(`🎯 Selected Leave ID: ${currentLeaveId}`);
+                    logResult(`👤 Employee: ${employee}`);
+                    logResult(`📧 Employee Email: ${employeeEmail}`);
+                    logResult('✅ Ready for HR testing!');
+                } else {
+                    logResult('⚠️ No pending leave requests found');
+                    logResult('💡 Create a leave request first to test the system');
+                }
+            } catch (error) {
+                logResult('❌ Error loading leave requests: ' + error.message);
+            }
+        }
+
+        // Test HR approval
+        async function testHRApproval() {
+            if (!currentLeaveId) {
+                logResult('❌ No leave request selected. Load leave requests first.');
+                return;
+            }
+
+            logResult('🚀 Testing HR Direct Approval...');
+            logResult(`📋 Leave ID: ${currentLeaveId}`);
+            
+            try {
+                const response = await fetch(`/leaves/${currentLeaveId}/hr-approve`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    logResult('🎉 HR APPROVAL SUCCESS!');
+                    logResult(`📧 Email Method: ${result.emailMethod}`);
+                    logResult(`📤 From Email: ${result.fromEmail}`);
+                    logResult(`📥 To Email: ${result.toEmail}`);
+                    logResult(`👤 HR User: ${result.hrUser}`);
+                    logResult(`📝 Message: ${result.message}`);
+                    
+                    // Update email flow visualization
+                    document.getElementById('emailMethod').textContent = result.emailMethod;
+                    
+                    // Show email preview
+                    showEmailPreview('Approval', result);
+                    
+                    if (result.emailMethod === 'HR Direct Email') {
+                        logResult('✅ SUCCESS: Email sent directly from HR to Employee!');
+                        updateStatus('✅ HR Direct Email Working!', 'success');
+                    } else {
+                        logResult('ℹ️ Using system fallback. Configure HR email for direct communication.');
+                        updateStatus('⚠️ Using System Fallback', 'warning');
+                    }
+                } else {
+                    logResult('❌ Approval failed: ' + result.message);
+                }
+            } catch (error) {
+                logResult('❌ Error testing approval: ' + error.message);
+            }
+        }
+
+        // Test HR rejection
+        async function testHRRejection() {
+            if (!currentLeaveId) {
+                logResult('❌ No leave request selected. Load leave requests first.');
+                return;
+            }
+
+            logResult('🚀 Testing HR Direct Rejection...');
+            logResult(`📋 Leave ID: ${currentLeaveId}`);
+            
+            try {
+                const response = await fetch(`/leaves/${currentLeaveId}/hr-reject`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        rejectionReason: 'Testing HR direct rejection email system - Demo purposes'
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    logResult('🎉 HR REJECTION SUCCESS!');
+                    logResult(`📧 Email Method: ${result.emailMethod}`);
+                    logResult(`📤 From Email: ${result.fromEmail}`);
+                    logResult(`📥 To Email: ${result.toEmail}`);
+                    logResult(`👤 HR User: ${result.hrUser}`);
+                    logResult(`📝 Rejection Reason: ${result.rejectionReason}`);
+                    logResult(`📝 Message: ${result.message}`);
+                    
+                    // Update email flow visualization
+                    document.getElementById('emailMethod').textContent = result.emailMethod;
+                    
+                    // Show email preview
+                    showEmailPreview('Rejection', result);
+                    
+                    if (result.emailMethod === 'HR Direct Email') {
+                        logResult('✅ SUCCESS: Email sent directly from HR to Employee!');
+                        updateStatus('✅ HR Direct Email Working!', 'success');
+                    } else {
+                        logResult('ℹ️ Using system fallback. Configure HR email for direct communication.');
+                        updateStatus('⚠️ Using System Fallback', 'warning');
+                    }
+                } else {
+                    logResult('❌ Rejection failed: ' + result.message);
+                }
+            } catch (error) {
+                logResult('❌ Error testing rejection: ' + error.message);
+            }
+        }
+
+        // Configure HR email
+        async function configureHREmail() {
+            const appPassword = document.getElementById('appPasswordInput').value;
+            
+            if (!appPassword) {
+                logResult('❌ Please enter Gmail App Password');
+                return;
+            }
+
+            logResult('🔧 Configuring HR Email...');
+            
+            try {
+                const response = await fetch('/leaves/hr-email-config', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        appPassword: appPassword
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    logResult('✅ HR Email Configuration SUCCESS!');
+                    logResult(`📧 HR Email: ${result.hrEmail}`);
+                    logResult(`📝 Message: ${result.message}`);
+                    logResult('🎉 You can now send emails directly from HR to Employee!');
+                    
+                    updateStatus('✅ HR Email Configured!', 'success');
+                    document.getElementById('appPasswordInput').value = '';
+                } else {
+                    logResult('❌ Configuration failed: ' + result.message);
+                }
+            } catch (error) {
+                logResult('❌ Error configuring email: ' + error.message);
+            }
+        }
+
+        // Show email preview
+        function showEmailPreview(type, result) {
+            const preview = document.getElementById('emailPreview');
+            const content = document.getElementById('emailContent');
+            
+            content.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>📧 Email Details</h6>
+                        <p><strong>Type:</strong> ${type}</p>
+                        <p><strong>From:</strong> ${result.fromEmail}</p>
+                        <p><strong>To:</strong> ${result.toEmail}</p>
+                        <p><strong>Method:</strong> ${result.emailMethod}</p>
+                        <p><strong>HR User:</strong> ${result.hrUser}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>📝 Content Preview</h6>
+                        <div class="border p-3 bg-light">
+                            <p><strong>Subject:</strong> ${type === 'Approval' ? '✅ Leave Request Approved' : '📋 Leave Request Update'}</p>
+                            <p><strong>Content:</strong> Professional AI-generated email with:</p>
+                            <ul class="small">
+                                <li>Personalized greeting</li>
+                                <li>Leave details in HTML table</li>
+                                <li>HR contact information</li>
+                                <li>${type === 'Approval' ? 'Pre-leave checklist' : 'Rejection reason & next steps'}</li>
+                                <li>Direct reply capability</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            preview.style.display = 'block';
+        }
+
+        // Update status indicator
+        function updateStatus(message, type) {
+            const statusDiv = document.getElementById('systemStatus');
+            const statusClass = type === 'success' ? 'status-success' : 
+                               type === 'warning' ? 'status-warning' : 'status-error';
+            
+            statusDiv.innerHTML = `<span class="status-indicator ${statusClass}"></span>${message}`;
+        }
+
+        // Log results
+        function logResult(message) {
+            const resultsDiv = document.getElementById('testResults');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            testResults.push(`[${timestamp}] ${message}`);
+            resultsDiv.textContent = testResults.join('\n');
+            resultsDiv.style.display = 'block';
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            logResult('🎉 Dynamic Email System Demo Loaded');
+            logResult('📋 Instructions:');
+            logResult('1. Check system status');
+            logResult('2. Load leave requests');
+            logResult('3. Test HR approval/rejection');
+            logResult('4. Configure HR email (optional)');
+            logResult('5. Watch the magic happen! ✨');
+            logResult('');
+            
+            checkSystemStatus();
+        });
+    </script>
+</body>
+</html>

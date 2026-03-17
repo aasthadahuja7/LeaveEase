@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Title Changes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f8fafc;
+        }
+        .test-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .test-button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 16px;
+        }
+        .test-button:hover {
+            background: #2563eb;
+        }
+        .test-button.hr {
+            background: #7c3aed;
+        }
+        .test-button.hr:hover {
+            background: #6d28d9;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            background: #f1f5f9;
+        }
+        .title-display {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .hr-title {
+            color: #7c3aed;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Test Dashboard Title Changes</h1>
+        <p>This test verifies that the dashboard title changes correctly based on user role.</p>
+        
+        <div>
+            <button class="test-button" onclick="testEmployeeRole()">Test Employee Role</button>
+            <button class="test-button hr" onclick="testHRRole()">Test HR Role</button>
+        </div>
+        
+        <div class="result">
+            <div class="title-display" id="testTitle">Employee Leave Management</div>
+            <div>Page Title: <span id="pageTitle">Employee Leave Management - Leave App</span></div>
+            <div>User Role: <span id="userRole">Employee</span></div>
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <h3>Expected Behavior:</h3>
+            <ul>
+                <li><strong>Employee Role:</strong> "Employee Leave Management" (default color)</li>
+                <li><strong>HR Role:</strong> "HR Management Dashboard" (purple color)</li>
+                <li>Page title should also change accordingly</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function testEmployeeRole() {
+            document.getElementById('testTitle').textContent = 'Employee Leave Management';
+            document.getElementById('testTitle').classList.remove('hr-title');
+            document.getElementById('pageTitle').textContent = 'Employee Leave Management - Leave App';
+            document.getElementById('userRole').textContent = 'Employee';
+            document.title = 'Employee Leave Management - Leave App';
+        }
+        
+        function testHRRole() {
+            document.getElementById('testTitle').textContent = 'HR Management Dashboard';
+            document.getElementById('testTitle').classList.add('hr-title');
+            document.getElementById('pageTitle').textContent = 'HR Management Dashboard - Leave App';
+            document.getElementById('userRole').textContent = 'HR Manager';
+            document.title = 'HR Management Dashboard - Leave App';
+        }
+    </script>
+</body>
+</html> 

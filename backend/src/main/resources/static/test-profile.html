@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Profile Test</title>
+</head>
+<body>
+    <h1>Profile Picture Test</h1>
+    <div id="result"></div>
+    <button onclick="testProfile()">Test Profile API</button>
+    <button onclick="testUpload()">Test Upload</button>
+    
+    <script>
+        async function testProfile() {
+            try {
+                const response = await fetch('/api/user/profile');
+                const result = document.getElementById('result');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    result.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                    console.log('Profile data:', data);
+                } else {
+                    result.innerHTML = 'Error: ' + response.status + ' - ' + response.statusText;
+                    console.error('Profile API error:', response.status);
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = 'Error: ' + error.message;
+                console.error('Profile API error:', error);
+            }
+        }
+        
+        function testUpload() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = async function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const formData = new FormData();
+                    formData.append('profilePicture', file);
+                    
+                    try {
+                        const response = await fetch('/api/user/profile-picture', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        
+                        const result = document.getElementById('result');
+                        if (response.ok) {
+                            const data = await response.json();
+                            result.innerHTML = '<pre>Upload Success:\n' + JSON.stringify(data, null, 2) + '</pre>';
+                            console.log('Upload success:', data);
+                        } else {
+                            const error = await response.text();
+                            result.innerHTML = 'Upload Error: ' + response.status + ' - ' + error;
+                            console.error('Upload error:', response.status, error);
+                        }
+                    } catch (error) {
+                        document.getElementById('result').innerHTML = 'Upload Error: ' + error.message;
+                        console.error('Upload error:', error);
+                    }
+                }
+            };
+            input.click();
+        }
+    </script>
+</body>
+</html>
