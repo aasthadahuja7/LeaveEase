@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    container_name: leaveease-postgres-prod
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-leavedb}
+      POSTGRES_USER: ${POSTGRES_USER:-leaveuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - leaveease-network
+    # Only expose to other services, not host
+    expose:
+      - "5432"
+
+  # FastAPI Backend
+  backend:
+    build: 
+      context: ./backend_fastapi
+      dockerfile: Dockerfile.prod
+    container_name: leaveease-backend-prod
+    restart: always
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-leaveuser}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-leavedb}
+      SECRET_KEY: ${SECRET_KEY}
+      DEBUG: "false"
+    depends_on:
+      - postgres
+    networks:
+      - leaveease-network
+    expose:
+      - "8000"
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: leaveease-nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+      - ./frontend/build:/usr/share/nginx/html:ro
+    depends_on:
+      - backend
+    networks:
+      - leaveease-network
+
+  # React Frontend (Build only)
+  frontend-build:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    container_name: leaveease-frontend-build
+    volumes:
+      - frontend_build:/app/build
+    networks:
+      - leaveease-network
+
+volumes:
+  postgres_data:
+  frontend_build:
+
+networks:
+  leaveease-network:
+    driver: bridge

@@ -19,10 +19,7 @@
             <p id="userGreeting" class="user-greeting">Welcome! Your work-life harmony starts here.</p>
             <div id="dashboardTip" class="dashboard-tip" role="note" aria-live="polite">Tip: Submit leave 2 weeks early for smooth approval.</div>
             <div class="header-actions">
-                <button class="ai-chat-btn" onclick="openAIChat()" title="Chat with AI Assistant">
-                    <span>🤖</span>
-                    AI Assistant
-                </button>
+
                 <div class="user-profile" onclick="showProfile()" style="cursor: pointer;" title="Click to view profile">
                     <div class="user-avatar"></div>
                     <div class="user-info">
@@ -373,7 +370,7 @@
                             <div class="config-benefits mt-3">
                                 <small class="text-muted">
                                     <i class="fas fa-info-circle me-1"></i>
-                                    Benefits: Employees receive emails from your personal account, can reply directly to you, professional AI-generated content
+                                    Benefits: Employees receive emails from your personal account, can reply directly to you, professional automated content
                                 </small>
                             </div>
                         </div>
@@ -583,9 +580,7 @@
             window.location.href = '/logout';
         }
 
-        function openAIChat() {
-            window.open('/ai-chat.html', '_blank', 'width=900,height=700,scrollbars=yes,resizable=yes');
-        }
+
     </script>
 </body>
 </html>

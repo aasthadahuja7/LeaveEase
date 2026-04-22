@@ -1,0 +1,58 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    container_name: leaveease-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: leavedb
+      POSTGRES_USER: leaveuser
+      POSTGRES_PASSWORD: leavepass123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - leaveease-network
+
+  # FastAPI Backend
+  backend:
+    build: ./backend_fastapi
+    container_name: leaveease-backend
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://leaveuser:leavepass123@postgres:5432/leavedb
+      SECRET_KEY: your-secret-key-change-in-production
+    depends_on:
+      - postgres
+    volumes:
+      - ./backend_fastapi:/app
+    networks:
+      - leaveease-network
+
+  # React Frontend (Node.js)
+  frontend:
+    build: ./frontend
+    container_name: leaveease-frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      REACT_APP_API_URL: http://localhost:8000
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - leaveease-network
+
+volumes:
+  postgres_data:
+
+networks:
+  leaveease-network:
+    driver: bridge

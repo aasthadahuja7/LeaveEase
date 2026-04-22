@@ -104,59 +104,68 @@ public class AuthController {
     }
     
     private void initializeDemoUsers() {
-        System.out.println("🔄 Checking if users exist...");
-        long userCount = userRepository.count();
-        System.out.println("📊 Current user count: " + userCount);
+        System.out.println("🔄 Checking if demo users exist...");
         
-        if (userCount == 0) {
-            System.out.println("🔄 Creating demo users...");
+        // Check for each demo user specifically
+        boolean hasHrUser = userRepository.findByUsername("hr_user").isPresent();
+        boolean hasJohnDoe = userRepository.findByUsername("john_doe").isPresent();
+        boolean hasJaneSmith = userRepository.findByUsername("jane_smith").isPresent();
+        boolean hasMikeJohnson = userRepository.findByUsername("mike_johnson").isPresent();
+        
+        System.out.println("📊 Demo users - HR: " + hasHrUser + ", John: " + hasJohnDoe + ", Jane: " + hasJaneSmith + ", Mike: " + hasMikeJohnson);
+        
+        if (!hasHrUser || !hasJohnDoe || !hasJaneSmith || !hasMikeJohnson) {
+            System.out.println("🔄 Creating/Updating demo users...");
             
-            // Create HR user
-            User hrUser = new User();
+            // Create or update HR user
+            Optional<User> hrUserOpt = userRepository.findByUsername("hr_user");
+            User hrUser = hrUserOpt.orElseGet(User::new);
             hrUser.setUsername("hr_user");
             hrUser.setEmail("hr@company.com");
             hrUser.setPassword(passwordEncoder.encode("password123"));
             hrUser.setFullName("HR Manager");
             hrUser.setDepartment("Human Resources");
             hrUser.setRole(Role.HR);
+            userRepository.save(hrUser);
+            System.out.println("✅ HR user ready: hr_user / password123");
             
-            // Create employee users
-            User employee1 = new User();
+            // Create or update employee users
+            Optional<User> emp1Opt = userRepository.findByUsername("john_doe");
+            User employee1 = emp1Opt.orElseGet(User::new);
             employee1.setUsername("john_doe");
             employee1.setEmail("john.doe@company.com");
             employee1.setPassword(passwordEncoder.encode("password123"));
             employee1.setFullName("John Doe");
             employee1.setDepartment("Engineering");
             employee1.setRole(Role.EMPLOYEE);
+            userRepository.save(employee1);
+            System.out.println("✅ Employee ready: john_doe / password123");
             
-            User employee2 = new User();
+            Optional<User> emp2Opt = userRepository.findByUsername("jane_smith");
+            User employee2 = emp2Opt.orElseGet(User::new);
             employee2.setUsername("jane_smith");
             employee2.setEmail("jane.smith@company.com");
             employee2.setPassword(passwordEncoder.encode("password123"));
             employee2.setFullName("Jane Smith");
             employee2.setDepartment("Engineering");
             employee2.setRole(Role.EMPLOYEE);
+            userRepository.save(employee2);
+            System.out.println("✅ Employee ready: jane_smith / password123");
             
-            User employee3 = new User();
+            Optional<User> emp3Opt = userRepository.findByUsername("mike_johnson");
+            User employee3 = emp3Opt.orElseGet(User::new);
             employee3.setUsername("mike_johnson");
             employee3.setEmail("mike.johnson@company.com");
             employee3.setPassword(passwordEncoder.encode("password123"));
             employee3.setFullName("Mike Johnson");
             employee3.setDepartment("Marketing");
             employee3.setRole(Role.EMPLOYEE);
-            
-            userRepository.save(hrUser);
-            userRepository.save(employee1);
-            userRepository.save(employee2);
             userRepository.save(employee3);
+            System.out.println("✅ Employee ready: mike_johnson / password123");
             
-            System.out.println("✅ Demo users created successfully!");
-            System.out.println("🔐 HR User: hr_user / password123");
-            System.out.println("👤 Employee: john_doe / password123");
-            System.out.println("👤 Employee: jane_smith / password123");
-            System.out.println("👤 Employee: mike_johnson / password123");
+            System.out.println("✅ Demo users are ready!");
         } else {
-            System.out.println("ℹ️ Users already exist, skipping creation.");
+            System.out.println("ℹ️ All demo users exist, skipping creation.");
         }
     }
     

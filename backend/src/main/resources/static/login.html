@@ -147,7 +147,7 @@
             You have been logged out successfully.
         </div>
 
-        <form id="loginForm" action="/login" method="post">
+        <form id="loginForm" onsubmit="handleLoginSubmit(event); return false;">
             <div class="form-group">
                 <label for="username">Username</label>
                 <input type="text" id="username" name="username" required>
@@ -175,36 +175,118 @@
 
 
     <script>
+        console.log('Login script loaded');
+        
+        // Handle login submission
+        async function handleLoginSubmit(event) {
+            console.log('Login form submitted');
+            if (event) event.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const errorMsg = document.getElementById('errorMessage');
+            
+            console.log('Login attempt for user:', username);
+            
+            if (!username || !password) {
+                errorMsg.textContent = 'Please enter both username and password.';
+                errorMsg.style.display = 'block';
+                console.warn('Missing username or password');
+                return false;
+            }
+            
+            try {
+                errorMsg.style.display = 'none'; // Hide previous errors
+                console.log('Sending login request to /api/auth/login');
+                const loginData = { username, password };
+                console.log('Request payload:', JSON.stringify(loginData));
+                
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(loginData)
+                });
+                
+                console.log('Response status:', response.status, response.statusText);
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (response.ok && data.token) {
+                    console.log('Login successful!');
+                    // Store token
+                    localStorage.setItem('authToken', data.token);
+                    localStorage.setItem('user', JSON.stringify(data));
+                    
+                    // Redirect to dashboard
+                    const redirectUrl = data.role === 'HR' ? '/dashboard.html?role=hr' : '/dashboard.html?role=employee';
+                    console.log('Redirecting to:', redirectUrl);
+                    window.location.href = redirectUrl;
+                } else {
+                    console.log('Login failed with status:', response.status);
+                    errorMsg.textContent = data.error || 'Invalid username or password. Please try again.';
+                    errorMsg.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Login error caught:', error);
+                errorMsg.textContent = 'Connection error: ' + (error.message || 'Unknown error');
+                errorMsg.style.display = 'block';
+            }
+            return false;
+        }
+        
         // Check for error parameter in URL
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('error') === 'true') {
             document.getElementById('errorMessage').style.display = 'block';
+            console.log('Error parameter found in URL');
         }
         
         // Check for logout parameter in URL
         if (urlParams.get('logout') === 'true') {
             document.getElementById('successMessage').style.display = 'block';
+            console.log('Logout parameter found in URL');
         }
+
+        // Ensure form submission handler is set up
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log('Window DOMContentLoaded event fired');
+            const loginForm = document.getElementById('loginForm');
+            if (loginForm) {
+                loginForm.addEventListener('submit', handleLoginSubmit);
+                console.log('Form submit listener attached');
+            }
+        });
 
         // Auto-fill demo credentials when clicked
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('Document DOMContentLoaded event fired');
             const demoCredentials = document.querySelector('.demo-credentials');
             const usernameInput = document.getElementById('username');
             const passwordInput = document.getElementById('password');
 
-            demoCredentials.addEventListener('click', function(e) {
-                if (e.target.textContent.includes('hr_user')) {
-                    usernameInput.value = 'hr_user';
-                    passwordInput.value = 'password123';
-                } else if (e.target.textContent.includes('john_doe')) {
-                    usernameInput.value = 'john_doe';
-                    passwordInput.value = 'password123';
-                } else if (e.target.textContent.includes('jane_smith')) {
-                    usernameInput.value = 'jane_smith';
-                    passwordInput.value = 'password123';
-                }
-            });
+            if (demoCredentials) {
+                demoCredentials.addEventListener('click', function(e) {
+                    if (e.target.textContent.includes('hr_user')) {
+                        usernameInput.value = 'hr_user';
+                        passwordInput.value = 'password123';
+                        console.log('Auto-filled HR user: hr_user / password123');
+                    } else if (e.target.textContent.includes('john_doe')) {
+                        usernameInput.value = 'john_doe';
+                        passwordInput.value = 'password123';
+                        console.log('Auto-filled Employee: john_doe / password123');
+                    } else if (e.target.textContent.includes('jane_smith')) {
+                        usernameInput.value = 'jane_smith';
+                        passwordInput.value = 'password123';
+                        console.log('Auto-filled Employee: jane_smith / password123');
+                    }
+                });
+            }
         });
+        
+        // Make handleLoginSubmit available globally
+        window.handleLoginSubmit = handleLoginSubmit;
     </script>
 </body>
 </html>

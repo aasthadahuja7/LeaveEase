@@ -8,19 +8,24 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import com.leavemanagement.leave_app.security.JwtAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
 
-    public SecurityConfig() {
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         System.out.println("[DEBUG] SecurityConfig bean created");
     }
 
@@ -41,11 +46,13 @@ public class SecurityConfig {
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers("/", "/login", "/login.html", "/signup", "/signup.html", "/register", "/css/**", "/js/**", "/images/**", 
                                "/static/**", "/uploads/**", "/index.html", "/style.css", "/script.js", "/test.html").permitAll()
+                .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/dashboard/hr/**").hasAnyRole("HR", "ADMIN")
                 .requestMatchers("/dashboard.html").authenticated()
                 .requestMatchers("/hr-dashboard.html").hasAnyRole("HR", "ADMIN")
                 .anyRequest().authenticated()
             )
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
             .formLogin(form -> form
                 .loginPage("/login.html")
                 .loginProcessingUrl("/login")
