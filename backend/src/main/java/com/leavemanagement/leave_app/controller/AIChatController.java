@@ -6,7 +6,10 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,86 +20,38 @@ public class AIChatController {
     @Autowired
     private AIChatAssistantService aiChatService;
 
-    /**
-     * WebSocket endpoint for AI chat
-     */
     @MessageMapping("/ai-chat")
     @SendTo("/topic/ai-responses")
     public Map<String, Object> handleAIChat(Map<String, String> message, SimpMessageHeaderAccessor headerAccessor) {
         try {
             String userMessage = message.get("message");
             String username = message.get("username");
-
-            System.out.println("🤖 AI Chat: " + username + " asked: " + userMessage);
-
-            // Process message through AI service
             String aiResponse = aiChatService.processChatMessage(userMessage, username);
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("type", "ai_response");
-            response.put("message", aiResponse);
-            response.put("username", username);
-            response.put("timestamp", System.currentTimeMillis());
-
-            System.out.println("🤖 AI Response: " + aiResponse);
-
-            return response;
-
+            return buildSocketResponse(aiResponse, username);
         } catch (Exception e) {
-            System.err.println("❌ Error in AI chat: " + e.getMessage());
-
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("type", "error");
-            errorResponse.put("message", "Sorry, I encountered an error. Please try again.");
-            errorResponse.put("timestamp", System.currentTimeMillis());
-
-            return errorResponse;
+            return buildSocketErrorResponse();
         }
     }
 
-    /**
-     * REST endpoint for AI chat (fallback)
-     */
     @PostMapping("/api/ai-chat")
     @ResponseBody
     public Map<String, Object> handleAIChatRest(@RequestBody Map<String, String> request) {
         try {
             String userMessage = request.get("message");
             String username = request.get("username");
-
-            System.out.println("🤖 AI Chat REST: " + username + " asked: " + userMessage);
-
             String aiResponse = aiChatService.processChatMessage(userMessage, username);
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", aiResponse);
-            response.put("timestamp", System.currentTimeMillis());
-
-            return response;
-
+            return buildRestSuccessResponse(aiResponse);
         } catch (Exception e) {
-            System.err.println("❌ Error in AI chat REST: " + e.getMessage());
-
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("success", false);
-            errorResponse.put("message", "Sorry, I encountered an error. Please try again.");
-            errorResponse.put("timestamp", System.currentTimeMillis());
-
-            return errorResponse;
+            return buildRestErrorResponse();
         }
     }
 
-    /**
-     * Test AI chat functionality
-     */
     @GetMapping("/api/ai-chat/test")
     @ResponseBody
     public Map<String, Object> testAIChat() {
         try {
             String testMessage = "help";
             String testUsername = "hr_user";
-
             String aiResponse = aiChatService.processChatMessage(testMessage, testUsername);
 
             Map<String, Object> response = new HashMap<>();
@@ -104,18 +59,50 @@ public class AIChatController {
             response.put("test_message", testMessage);
             response.put("ai_response", aiResponse);
             response.put("timestamp", System.currentTimeMillis());
-
             return response;
-
         } catch (Exception e) {
-            System.err.println("❌ Error testing AI chat: " + e.getMessage());
-
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("success", false);
-            errorResponse.put("error", e.getMessage());
-            errorResponse.put("timestamp", System.currentTimeMillis());
-
-            return errorResponse;
+            return buildTestErrorResponse(e.getMessage());
         }
+    }
+
+    private Map<String, Object> buildSocketResponse(String aiResponse, String username) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("type", "ai_response");
+        response.put("message", aiResponse);
+        response.put("username", username);
+        response.put("timestamp", System.currentTimeMillis());
+        return response;
+    }
+
+    private Map<String, Object> buildSocketErrorResponse() {
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("type", "error");
+        errorResponse.put("message", "Sorry, I encountered an error. Please try again.");
+        errorResponse.put("timestamp", System.currentTimeMillis());
+        return errorResponse;
+    }
+
+    private Map<String, Object> buildRestSuccessResponse(String aiResponse) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("message", aiResponse);
+        response.put("timestamp", System.currentTimeMillis());
+        return response;
+    }
+
+    private Map<String, Object> buildRestErrorResponse() {
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("success", false);
+        errorResponse.put("message", "Sorry, I encountered an error. Please try again.");
+        errorResponse.put("timestamp", System.currentTimeMillis());
+        return errorResponse;
+    }
+
+    private Map<String, Object> buildTestErrorResponse(String errorMessage) {
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("success", false);
+        errorResponse.put("error", errorMessage);
+        errorResponse.put("timestamp", System.currentTimeMillis());
+        return errorResponse;
     }
 }

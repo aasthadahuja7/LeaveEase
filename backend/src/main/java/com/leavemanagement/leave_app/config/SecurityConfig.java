@@ -39,7 +39,7 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(authz -> authz
-                .requestMatchers("/", "/login", "/login.html", "/signup", "/signup.html", "/register", "/css/**", "/js/**", "/images/**", 
+                .requestMatchers("/", "/login", "/login.html", "/signup", "/signup.html", "/register","/error", "/css/**", "/js/**", "/images/**", 
                                "/static/**", "/uploads/**", "/index.html", "/style.css", "/script.js", "/test.html").permitAll()
                 .requestMatchers("/api/dashboard/hr/**").hasAnyRole("HR", "ADMIN")
                 .requestMatchers("/dashboard.html").authenticated()
@@ -47,16 +47,16 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
-                .loginPage("/login.html")
+                .loginPage("/login")
                 .loginProcessingUrl("/login")
                 .defaultSuccessUrl("/dashboard", true)
-                .failureUrl("/login.html?error=true")
+                .failureUrl("/login?error=true")
                 .permitAll()
             )
             .userDetailsService(customUserDetailsService)
-            .logout(logout -> logout
+                .logout(logout -> logout
                 .logoutUrl("/logout")
-                .logoutSuccessUrl("/login.html?logout=true")
+                .logoutSuccessUrl("/login?logout=true")
                 .permitAll()
             )
             .rememberMe(me -> me.key("uniqueAndSecret"));

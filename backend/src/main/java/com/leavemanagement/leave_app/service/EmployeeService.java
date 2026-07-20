@@ -63,7 +63,7 @@ public class EmployeeService {
     public EmployeeStats getEmployeeStats() {
         long totalEmployees = employeeRepository.countByIsActiveTrue();
         long employeesOnLeave = employeeRepository.countByIsOnLeaveTrue();
-        long employeesPresent = employeeRepository.countEmployeesPresent();
+        long employeesPresent = employeeRepository.countByIsActiveTrueAndIsOnLeaveFalse();
         
         return new EmployeeStats(totalEmployees, employeesOnLeave, employeesPresent);
     }

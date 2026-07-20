@@ -33,8 +33,8 @@ public interface EmployeeRepository extends MongoRepository<Employee, String> {
     long countByIsOnLeaveTrue();
     
     // Count employees present (active and not on leave)
-    @Query("{ 'isActive': true, 'isOnLeave': false }")
-    long countEmployeesPresent();
+    // Use derived query method so Spring Data returns a long count instead of trying to map documents
+    long countByIsActiveTrueAndIsOnLeaveFalse();
     
     // Find employees by manager
     List<Employee> findByManagerId(String managerId);
